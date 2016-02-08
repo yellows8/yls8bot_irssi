@@ -34,10 +34,31 @@ $VERSION = '0.6';
 our %timers;
 # my %timer = { repeat => \d+, command => '' , windowitem => NULL , server=> NULL, timer = NULL};
 
+sub msg_wiiudev {
+	my ($lines, $data, $line);
+
+	open(FILE, "/home/yellows8/.irssi/msgwiiudev") or return "";
+
+	my @lines = <FILE>;
+	close(FILE);
+
+	unlink("/home/yellows8/.irssi/msgwiiudev");
+
+	$data = "/msg #WiiUdev ";
+	foreach $line (@lines)
+	{
+		if(length(${line})>0) {
+ 			$data .= "${line} ";
+		};
+	}
+	Irssi::print("sending wiiudev-msg ${data}");
+	return $data;
+}
+
 sub msg_3dsdev {
 	my ($lines, $data, $line);
 
-	open(FILE, "/home/yellows8/.irssi/msg3dsdev") or return "";
+	open(FILE, "/home/yellows8/.irssi/msg3dsdev") or return msg_wiiudev();
 
 	my @lines = <FILE>;
 	close(FILE);

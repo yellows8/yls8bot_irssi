@@ -34,88 +34,50 @@ $VERSION = '0.6';
 our %timers;
 # my %timer = { repeat => \d+, command => '' , windowitem => NULL , server=> NULL, timer = NULL};
 
-sub msg_wiiudev {
+sub msg_target {
 	my ($lines, $data, $line);
+	my ($msgtarget, $msgfile) = @_;
 
-	open(FILE, "/home/yellows8/.irssi/msgwiiudev") or return "";
+	open(FILE, ${msgfile}) or return "";
 
 	my @lines = <FILE>;
 	close(FILE);
 
-	unlink("/home/yellows8/.irssi/msgwiiudev");
+	unlink(${msgfile});
 
-	$data = "/msg #WiiUdev ";
+	$data = "/msg ${msgtarget} ";
 	foreach $line (@lines)
 	{
 		if(length(${line})>0) {
  			$data .= "${line} ";
 		};
 	}
-	Irssi::print("sending wiiudev-msg ${data}");
-	return $data;
-}
-
-sub msg_3dsdev {
-	my ($lines, $data, $line);
-
-	open(FILE, "/home/yellows8/.irssi/msg3dsdev") or return msg_wiiudev();
-
-	my @lines = <FILE>;
-	close(FILE);
-
-	unlink("/home/yellows8/.irssi/msg3dsdev");
-
-	$data = "/msg #3dsdev ";
-	foreach $line (@lines)
-	{
-		if(length(${line})>0) {
- 			$data .= "${line} ";
-		};
-	}
-	Irssi::print("sending 3dsdev-msg ${data}");
-	return $data;
-}
-
-sub msg_yls8ninupdateschan {
-	my ($lines, $data, $line);
-
-	open(FILE, "/home/yellows8/.irssi/msg_yls8ninupdateschan") or return msg_3dsdev();
-
-	my @lines = <FILE>;
-	close(FILE);
-
-	unlink("/home/yellows8/.irssi/msg_yls8ninupdateschan");
-
-	$data = "/msg #yls8ninupdates ";
-	foreach $line (@lines)
-	{
-		if(length(${line})>0) {
- 			$data .= "${line} ";
-		};
-	}
-	Irssi::print("sending yls8ninupdates chan-msg ${data}");
+	Irssi::print("sending ${msgtarget} msg ${data}");
 	return $data;
 }
 
 sub msgme {
-	my ($lines, $data, $line);
+	my ($line, $lines_config, $line_config, @config_list, $msgfile);
 
-	open(FILE, "/home/yellows8/.irssi/msgme") or return msg_yls8ninupdateschan();
+	# Each line in this config file is: {first param for irc /msg command} {filename to load messages from under the .irssi directory}
+	open(FILE_config, "/home/yellows8/.irssi/msg_config") or return "";
+	my @lines_config = <FILE_config>;
+	close(FILE_config);
 
-	my @lines = <FILE>;
-	close(FILE);
-
-	unlink("/home/yellows8/.irssi/msgme");
-
-	$data = "/msg yellows8 ";
-	foreach $line (@lines)
+	foreach $line_config (@lines_config)
 	{
-		if(length(${line})>0) {
- 			$data .= "${line} ";
+		if(length(${line_config})>0) {
+			@config_list = split(/ /, ${line_config});
+			$msgfile = $config_list[1];
+			chomp(${msgfile});
+			$line = msg_target($config_list[0], "/home/yellows8/.irssi/${msgfile}");
+			if(length(${line})>0) {
+				return ${line};
+			};
 		};
 	}
-	Irssi::print("sending msg ${data}");
-	return $data;
+
+	return "";
 }
 
 sub timer_command {
